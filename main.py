@@ -20,7 +20,7 @@ PIPE = 'gallery/sprites/pipe.png'
 SCORE_FILE = 'scores.txt'  # File to store scores
 
 def welcomeScreen():
-    """
+    """ 
     Shows welcome images on the screen
     """
 
@@ -46,113 +46,6 @@ def welcomeScreen():
                 SCREEN.blit(GAME_SPRITES['base'], (basex, GROUNDY))
                 pygame.display.update()
                 FPSCLOCK.tick(FPS)
-
-
-# def mainGame():
-#     score = 0
-#     playerx = int(SCREENWIDTH / 5)
-#     playery = int(SCREENWIDTH / 2)
-#     basex = 0
-#
-#     # Create 2 pipes for blitting on the screen
-#     newPipe1 = getRandomPipe()
-#     newPipe2 = getRandomPipe()
-#
-#     # my List of upper pipes
-#     upperPipes = [
-#         {'x': SCREENWIDTH + 200, 'y': newPipe1[0]['y']},
-#         {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
-#     ]
-#     # my List of lower pipes
-#     lowerPipes = [
-#         {'x': SCREENWIDTH + 200, 'y': newPipe1[1]['y']},
-#         {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[1]['y']},
-#     ]
-#
-#     pipeVelX = -4
-#
-#     playerVelY = -9
-#     playerMaxVelY = 10
-#     playerMinVelY = -8
-#     playerAccY = 1
-#
-#     playerFlapAccv = -8  # velocity while flapping
-#     playerFlapped = False  # It is true only when the bird is flapping
-#
-#     while True:
-#         for event in pygame.event.get():
-#             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-#                 pygame.quit()
-#                 sys.exit()
-#             if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
-#                 if playery > 0:
-#                     playerVelY = playerFlapAccv
-#                     playerFlapped = True
-#                     GAME_SOUNDS['wing'].play()
-#
-#         crashTest = isCollide(playerx, playery, upperPipes,
-#                               lowerPipes)  # This function will return true if the player is crashed
-#         if crashTest:
-#             return
-#
-#             # check for score
-#         playerMidPos = playerx + GAME_SPRITES['player'].get_width() / 2
-#         for pipe in upperPipes:
-#             pipeMidPos = pipe['x'] + GAME_SPRITES['pipe'][0].get_width() / 2
-#             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
-#                 score += 1
-#                 print(f"Your score is {score}")
-#                 GAME_SOUNDS['point'].play()
-#
-#         if playerVelY < playerMaxVelY and not playerFlapped:
-#             playerVelY += playerAccY
-#
-#         if playerFlapped:
-#             playerFlapped = False
-#         playerHeight = GAME_SPRITES['player'].get_height()
-#         playery = playery + min(playerVelY, GROUNDY - playery - playerHeight)
-#
-#         # move pipes to the left
-#         for upperPipe, lowerPipe in zip(upperPipes, lowerPipes):
-#             upperPipe['x'] += pipeVelX
-#             lowerPipe['x'] += pipeVelX
-#
-#         # Add a new pipe when the first is about to cross the leftmost part of the screen
-#         if 0 < upperPipes[0]['x'] < 5:
-#             newpipe = getRandomPipe()
-#             upperPipes.append(newpipe[0])
-#             lowerPipes.append(newpipe[1])
-#
-#         # if the pipe is out of the screen, remove it
-#         if upperPipes[0]['x'] < -GAME_SPRITES['pipe'][0].get_width():
-#             upperPipes.pop(0)
-#             lowerPipes.pop(0)
-#
-#         # Lets blit our sprites now
-#         SCREEN.blit(GAME_SPRITES['background'], (0, 0))
-#         for upperPipe, lowerPipe in zip(upperPipes, lowerPipes):
-#             SCREEN.blit(GAME_SPRITES['pipe'][0], (upperPipe['x'], upperPipe['y']))
-#             SCREEN.blit(GAME_SPRITES['pipe'][1], (lowerPipe['x'], lowerPipe['y']))
-#
-#         SCREEN.blit(GAME_SPRITES['base'], (basex, GROUNDY))
-#         SCREEN.blit(GAME_SPRITES['player'], (playerx, playery))
-#         myDigits = [int(x) for x in list(str(score))]
-#         width = 0
-#         for digit in myDigits:
-#             width += GAME_SPRITES['numbers'][digit].get_width()
-#         Xoffset = (SCREENWIDTH - width) / 2
-#
-#         for digit in myDigits:
-#             SCREEN.blit(GAME_SPRITES['numbers'][digit], (Xoffset, SCREENHEIGHT * 0.12))
-#             Xoffset += GAME_SPRITES['numbers'][digit].get_width()
-#         pygame.display.update()
-#         FPSCLOCK.tick(FPS)
-#
-#         crashTest = isCollide(playerx, playery, upperPipes, lowerPipes)
-#         if crashTest:
-#             # Game over condition
-#             gameOver()
-#             return  # Exit the main game loop
 
 def mainGame():
     score = 0
@@ -350,28 +243,36 @@ def getRandomPipe():
 #                 return  # Restart the game
 
 def gameOver(score):
-    # Load game over image
-    game_over_image = pygame.image.load('gallery/sprites/gameover.png').convert_alpha()
-    game_over_rect = game_over_image.get_rect(center=(SCREENWIDTH / 2, SCREENHEIGHT / 2))
-
-    # Display game over image
-    SCREEN.blit(game_over_image, game_over_rect)
+    # Display Game Over text
+    font = pygame.font.Font(None, 48)
+    game_over_text = font.render('Game Over', True, (255, 0, 0))
+    game_over_rect = game_over_text.get_rect(center=(SCREENWIDTH / 2, SCREENHEIGHT / 2 - 50))
+    
+    score_text = font.render(f'Score: {score}', True, (255, 255, 255))
+    score_rect = score_text.get_rect(center=(SCREENWIDTH / 2, SCREENHEIGHT / 2))
+    
+    SCREEN.blit(game_over_text, game_over_rect)
+    SCREEN.blit(score_text, score_rect)
     pygame.display.update()
-
-    # Store score in a text file
-    storeScore(score)
-
-    # Wait for a moment before allowing restart
-    pygame.time.wait(2000)  # 2000 milliseconds (2 seconds)
-
-    # Restart the game if the player presses any key
-    while True:
+    
+    # Save score with timestamp
+    with open(SCORE_FILE, 'a') as f:
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        f.write(f"{timestamp} - Score: {score}\n")
+    
+    # Wait a little
+    pygame.time.wait(1500)
+    
+    # Wait for a key to be pressed
+    waiting = True
+    while waiting:
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == KEYDOWN:
-                return  # Restart the game
+            if event.type == KEYDOWN:
+                waiting = False
+ 
 
 def storeScore(score):
     # Open the file in append mode and write the score and timestamp
@@ -402,7 +303,7 @@ if __name__ == "__main__":
         pygame.image.load('gallery/sprites/9.png').convert_alpha(),
     )
 
-    GAME_SPRITES['message'] = pygame.image.load('gallery/sprites/welcome page.jpg').convert_alpha()
+    GAME_SPRITES['message'] = pygame.image.load('gallery/sprites/message.png').convert_alpha()
     GAME_SPRITES['base'] = pygame.image.load('gallery/sprites/base.png').convert_alpha()
     GAME_SPRITES['pipe'] = (pygame.transform.rotate(pygame.image.load(PIPE).convert_alpha(), 180),
                             pygame.image.load(PIPE).convert_alpha()

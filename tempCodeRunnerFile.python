@@ -1,0 +1,48 @@
+from PIL import Image, ImageDraw, ImageFont
+
+# Create a blank white canvas
+width, height = 1200, 800
+canvas = Image.new("RGB", (width, height), "white")
+draw = ImageDraw.Draw(canvas)
+
+# Define font and size
+font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"
+font = ImageFont.truetype(font_path, 28)
+
+# Solution text
+solution_text = """
+Solution:
+
+cos²x - 2cosx = 4sinx - 2sinx cosx
+
+⇒ (cosx - 2)(cosx + 2sinx) = 0
+
+⇒ cosx - 2 = 0   or   cosx + 2sinx = 0
+
+⇒ cosx = 2   (not possible, since  -1 ≤ cosx ≤ 1)
+
+⇒ cosx + 2sinx = 0
+
+⇒ sinx / cosx = -1/2
+
+⇒ tanx = -1/2
+
+⇒ -1/2 = 2tan(x/2) / (1 - tan²(x/2))
+
+⇒ tan²(x/2) - 4tan(x/2) - 1 = 0
+
+⇒ tan(x/2) = 2 ± √5
+"""
+
+# Draw the solution text with left alignment
+x, y = 50, 50
+for line in solution_text.strip().split("\n"):
+    draw.text((x, y), line, font=font, fill="black")
+    y += 50
+
+# Save the image
+output_path = "/mnt/data/left_aligned_solution.png"
+canvas.save(output_path)
+
+# Display the output path
+output_path
