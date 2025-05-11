@@ -19,6 +19,28 @@ BACKGROUND = 'gallery/sprites/bg_3.jpg'
 PIPE = 'gallery/sprites/pipe.png'
 SCORE_FILE = 'scores.txt'  # File to store scores
 
+class PowerUp:  
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.width = 50  # Power-up width
+        self.height = 50  # Power-up height
+        self.image = pygame.image.load('gallery/sprites/powerup.png')  # Load your power-up image
+
+    def move(self):
+        self.x -= 4  # Power-up moves towards the left at the same speed as pipes
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+
+    def is_collected(self, playerx, playery, player_width, player_height):
+        # Check if the player collects the power-up
+        if (self.x < playerx + player_width) and (self.x + self.width > playerx) and \
+           (self.y < playery + player_height) and (self.y + self.height > playery):
+            return True
+        return False
+
+
 def welcomeScreen():
     """ 
     Shows welcome images on the screen
@@ -53,17 +75,22 @@ def mainGame():
     playerx = int(SCREENWIDTH / 5)
     playery = int(SCREENWIDTH / 2)
     basex = 0
+    player_width = GAME_SPRITES['player'].get_width()
+    player_height = GAME_SPRITES['player'].get_height()
+
+    # Create initial power-up
+    power_up = PowerUp(SCREENWIDTH + 300, random.randint(100, SCREENHEIGHT - 100))
+    power_up_active = False
+    power_up_timer = 0  # Timer for power-up effect duration
 
     # Create 2 pipes for blitting on the screen
     newPipe1 = getRandomPipe()
     newPipe2 = getRandomPipe()
 
-    # my List of upper pipes
     upperPipes = [
         {'x': SCREENWIDTH + 200, 'y': newPipe1[0]['y']},
         {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
     ]
-    # my List of lower pipes
     lowerPipes = [
         {'x': SCREENWIDTH + 200, 'y': newPipe1[1]['y']},
         {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[1]['y']},
@@ -90,8 +117,29 @@ def mainGame():
                     playerFlapped = True
                     GAME_SOUNDS['wing'].play()
 
-        crashTest = isCollide(playerx, playery, upperPipes,
-                              lowerPipes)  # This function will return true if the player is crashed
+        # Check for power-up collection
+        # Create a new power-up after it's collected
+        if power_up.is_collected(playerx, playery, player_width, player_height):
+            playerVelY -= 2  # Boost player speed temporarily
+            power_up_active = True
+            power_up_timer = pygame.time.get_ticks()  # Start the timer for power-up effect
+            power_up = PowerUp(SCREENWIDTH + 300, random.randint(100, SCREENHEIGHT - 100))  # Respawn new power-up
+
+
+        # Move and draw power-up if active
+        if not power_up_active:
+            power_up.move()
+            power_up.draw(SCREEN)
+
+        # Check if the power-up effect has expired
+        if power_up_active and pygame.time.get_ticks() - power_up_timer > 5000:  # 5 seconds duration
+            playerVelY += 2  # Reset player speed to normal
+            power_up_active = False
+            # Respawn a new power-up at a different location
+            power_up = PowerUp(SCREENWIDTH + 300, random.randint(100, SCREENHEIGHT - 100))
+
+        # Game logic continues...
+        crashTest = isCollide(playerx, playery, upperPipes, lowerPipes)
         if crashTest:
             return
 
@@ -161,7 +209,6 @@ def mainGame():
             return  # Exit the main game loop
 
 
-
 def isCollide(playerx, playery, upperPipes, lowerPipes):
     if playery > GROUNDY - 25 or playery < 0:
         GAME_SOUNDS['hit'].play()
@@ -184,63 +231,21 @@ def isCollide(playerx, playery, upperPipes, lowerPipes):
 
 def getRandomPipe():
     """
-    Generate positions of two pipes(one bottom straight and one top rotated ) for blitting on the screen
+    Generate positions of two pipes (one top and one bottom) for blitting on the screen.
     """
-    pipeHeight = GAME_SPRITES['pipe'][0].get_height()
-    offset = SCREENHEIGHT / 3
+    pipeHeight = GAME_SPRITES['pipe'][0].get_height()  # Height of the pipe
+    offset = SCREENHEIGHT / 3  # Offsets to determine where to position pipes vertically
     y2 = offset + random.randrange(0, int(SCREENHEIGHT - GAME_SPRITES['base'].get_height() - 1.2 * offset))
-    pipeX = SCREENWIDTH + 10
+    pipeX = SCREENWIDTH + 10  # Set pipe position off-screen initially
     y1 = pipeHeight - y2 + offset
     pipe = [
-        {'x': pipeX, 'y': -y1},  # upper Pipe
-        {'x': pipeX, 'y': y2}  # lower Pipe
+        {'x': pipeX, 'y': -y1},  # Upper pipe (flipped vertically)
+        {'x': pipeX, 'y': y2}  # Lower pipe
     ]
     return pipe
 
 
-'''def gameOver():
-    # Game over message
-    game_over_font = pygame.font.Font(None, 36)
-    game_over_text = game_over_font.render('Game Over', True, (255, 255, 255))
-    game_over_rect = game_over_text.get_rect(center=(SCREENWIDTH / 2, SCREENHEIGHT / 2))
 
-    # Display game over message
-    SCREEN.blit(game_over_text, game_over_rect)
-    pygame.display.update()
-
-    # Wait for a moment before allowing restart
-    pygame.time.wait(2000)  # 2000 milliseconds (2 seconds)
-
-    # Restart the game if the player presses any key
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == KEYDOWN:
-                return  # Restart the game'''
-
-
-# def gameOver():
-#     # Load game over image
-#     game_over_image = pygame.image.load('gallery/sprites/gameover.png').convert_alpha()
-#     game_over_rect = game_over_image.get_rect(center=(SCREENWIDTH / 2, SCREENHEIGHT / 2))
-#
-#     # Display game over image
-#     SCREEN.blit(game_over_image, game_over_rect)
-#     pygame.display.update()
-#
-#     # Wait for a moment before allowing restart
-#     pygame.time.wait(2000)  # 2000 milliseconds (2 seconds)
-#
-#     # Restart the game if the player presses any key
-#     while True:
-#         for event in pygame.event.get():
-#             if event.type == QUIT:
-#                 pygame.quit()
-#                 sys.exit()
-#             elif event.type == KEYDOWN:
-#                 return  # Restart the game
 
 def gameOver(score):
     # Display Game Over text
@@ -272,6 +277,7 @@ def gameOver(score):
                 sys.exit()
             if event.type == KEYDOWN:
                 waiting = False
+
  
 
 def storeScore(score):
